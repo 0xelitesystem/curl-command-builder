@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>curl Command Builder</title>
+<meta name="description" content="Build a curl command from a form: method, URL, query params, headers, body, and auth. Live preview with proper quoting and a copy button. Runs entirely in your browser.">
+<link rel="canonical" href="https://0xelitesystem.github.io/curl-command-builder/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="curl Command Builder">
+<meta property="og:description" content="Build a curl command from a form with proper quoting and a copy button. Runs entirely in your browser.">
+<meta property="og:url" content="https://0xelitesystem.github.io/curl-command-builder/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "curl Command Builder",
+  "description": "Build a curl command from a form: method, URL, query params, headers, body, and auth. Live preview with proper quoting and a copy button. Runs entirely in your browser.",
+  "url": "https://0xelitesystem.github.io/curl-command-builder/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "0xelitesystem" }
+}
+</script>
+<style>
+:root {
+  --bg: #fafaf6;
+  --surface: #ffffff;
+  --ink: #0a1d1e;
+  --ink-soft: #2c4a4c;
+  --rule: #c8d4d3;
+  --teal: #0f5c60;
+  --teal-deep: #0a4548;
+  --gold: #b07d2a;
+  --gold-deep: #8a611f;
+  --ok: #1a5c2e;
+  --warn: #8a5a00;
+  --err: #8b1a1a;
+  --code-bg: #f0ebe1;
+}
+[data-theme="dark"] {
+  --bg: #0c1c1d;
+  --surface: #14292a;
+  --ink: #e8ebe6;
+  --ink-soft: #b0c0bd;
+  --rule: #2a4042;
+  --teal: #4ab4ba;
+  --teal-deep: #6dc8ce;
+  --gold: #d4a155;
+  --gold-deep: #e6b876;
+  --ok: #6dd380;
+  --warn: #d4a155;
+  --err: #e88080;
+  --code-bg: #0a1718;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  line-height: 1.55;
+}
+.wrap { max-width: 1100px; margin: 0 auto; }
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 2px solid var(--teal);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--teal);
+}
+.tag {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.75rem;
+  color: var(--gold-deep);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+[data-theme="dark"] .tag { color: var(--gold); }
+.theme-btn {
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink-soft);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.theme-btn:hover { border-color: var(--teal); color: var(--teal); }
+.lede {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin-bottom: 1.75rem;
+  max-width: 65ch;
+}
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 1.25rem;
+  border-radius: 3px;
+  margin-bottom: 1.25rem;
+}
+.panel-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.field { margin-bottom: 1rem; }
+input[type="text"], input[type="url"], select, textarea {
+  width: 100%;
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  padding: 0.55rem 0.65rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.85rem;
+  border-radius: 2px;
+}
+textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+.row-pair { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center; }
+.row-pair input { margin: 0; }
+.icon-btn {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+  border-radius: 2px;
+  line-height: 1;
+}
+.icon-btn:hover { border-color: var(--err); color: var(--err); }
+button {
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 2px;
+}
+button:hover { border-color: var(--teal); }
+button.primary {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--surface);
+  font-weight: 600;
+}
+[data-theme="dark"] button.primary { color: var(--bg) !important; }
+button.primary:hover { background: var(--teal-deep); border-color: var(--teal-deep); }
+.add-btn { margin-top: 0.25rem; }
+.toggles { display: flex; flex-direction: column; gap: 0.6rem; }
+.toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.toggle input { width: auto; margin-top: 0.15rem; }
+.toggle .desc { color: var(--ink-soft); font-family: ui-serif, Georgia, serif; font-size: 0.8rem; }
+.radio-row { display: flex; flex-wrap: wrap; gap: 1rem; }
+.radio-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.radio-row input { width: auto; }
+.insecure-warn {
+  display: none;
+  font-size: 0.8rem;
+  color: var(--err);
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--code-bg);
+  border-left: 3px solid var(--err);
+  border-radius: 2px;
+}
+.insecure-warn.show { display: block; }
+.output-panel { position: sticky; top: 1rem; }
+.out-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+.out-head .panel-title { border: none; margin: 0; padding: 0; }
+pre {
+  background: var(--code-bg);
+  padding: 0.85rem;
+  border-radius: 2px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink);
+}
+.copied { color: var(--ok); font-size: 0.78rem; margin-left: 0.5rem; }
+.sub-label {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  margin: 1rem 0 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.privacy-note {
+  font-size: 0.78rem;
+  color: var(--gold-deep);
+  margin-top: 1rem;
+}
+[data-theme="dark"] .privacy-note { color: var(--gold); }
+footer {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+footer a { color: var(--teal); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+@media (max-width: 640px) {
+  body { padding: 1rem 0.75rem; }
+  h1 { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>curl Command Builder</h1>
+    <div class="tag">Build the command, copy it, run it yourself</div>
+  </div>
+  <button class="theme-btn" id="theme-toggle" type="button">Dark</button>
+</header>
+
+<p class="lede">Fill in the form and this tool builds a properly quoted curl command in real time. It only builds the string. It makes no network calls of its own. Copy the result and run it in your own terminal. Everything happens in your browser.</p>
+
+<div class="grid">
+  <div>
+    <div class="panel">
+      <div class="panel-title">Request</div>
+      <div class="field">
+        <label for="method">Method</label>
+        <select id="method">
+          <option>GET</option>
+          <option>POST</option>
+          <option>PUT</option>
+          <option>PATCH</option>
+          <option>DELETE</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="url">URL</label>
+        <input type="text" id="url" placeholder="https://api.example.com/v1/users" spellcheck="false" autocapitalize="off" autocorrect="off">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Query parameters</div>
+      <div id="params"></div>
+      <button class="add-btn" id="add-param" type="button">+ Add parameter</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Headers</div>
+      <div id="headers"></div>
+      <button class="add-btn" id="add-header" type="button">+ Add header</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Authentication</div>
+      <div class="field">
+        <div class="radio-row" id="auth-type">
+          <label><input type="radio" name="auth" value="none" checked> None</label>
+          <label><input type="radio" name="auth" value="basic"> Basic</label>
+          <label><input type="radio" name="auth" value="bearer"> Bearer</label>
+        </div>
+      </div>
+      <div class="field" id="basic-fields" style="display:none">
+        <div class="row-pair" style="grid-template-columns: 1fr 1fr;">
+          <input type="text" id="auth-user" placeholder="username" spellcheck="false" autocapitalize="off" autocorrect="off">
+          <input type="text" id="auth-pass" placeholder="password" spellcheck="false" autocapitalize="off" autocorrect="off">
+        </div>
+      </div>
+      <div class="field" id="bearer-fields" style="display:none">
+        <input type="text" id="auth-token" placeholder="token" spellcheck="false" autocapitalize="off" autocorrect="off">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Body</div>
+      <div class="field">
+        <div class="radio-row" id="body-type">
+          <label><input type="radio" name="body" value="none" checked> None</label>
+          <label><input type="radio" name="body" value="raw"> Raw</label>
+          <label><input type="radio" name="body" value="json"> JSON</label>
+          <label><input type="radio" name="body" value="form"> Form</label>
+        </div>
+      </div>
+      <div class="field" id="body-raw-field" style="display:none">
+        <textarea id="body-raw" placeholder="raw request body" spellcheck="false"></textarea>
+      </div>
+      <div class="field" id="body-json-field" style="display:none">
+        <textarea id="body-json" placeholder='{ "name": "Ada" }' spellcheck="false"></textarea>
+        <div style="font-size:0.78rem;color:var(--ink-soft);margin-top:0.35rem;">Sends a Content-Type: application/json header automatically.</div>
+      </div>
+      <div id="body-form-field" style="display:none">
+        <div id="form-fields"></div>
+        <button class="add-btn" id="add-form" type="button">+ Add form field</button>
+        <div style="font-size:0.78rem;color:var(--ink-soft);margin-top:0.5rem;">Each pair becomes a urlencoded --data field.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Options</div>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="opt-i"> <span><code>-i</code> <span class="desc">include response headers in output</span></span></label>
+        <label class="toggle"><input type="checkbox" id="opt-L"> <span><code>-L</code> <span class="desc">follow redirects</span></span></label>
+        <label class="toggle"><input type="checkbox" id="opt-k"> <span><code>-k</code> <span class="desc">allow insecure TLS (skip certificate verification)</span></span></label>
+        <label class="toggle"><input type="checkbox" id="opt-compressed"> <span><code>--compressed</code> <span class="desc">request and decode a compressed response</span></span></label>
+        <label class="toggle"><input type="checkbox" id="opt-s"> <span><code>-s</code> <span class="desc">silent (hide progress meter)</span></span></label>
+      </div>
+      <div class="insecure-warn" id="insecure-warn">Warning: <code>-k</code> disables TLS certificate verification. This exposes the request to man-in-the-middle attacks. Use it only against hosts you control while debugging, never in production.</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel output-panel">
+      <div class="out-head">
+        <div class="panel-title">Generated command</div>
+        <div>
+          <button class="primary" id="copy-btn" type="button">Copy</button>
+          <span class="copied" id="copied-msg" style="display:none">Copied</span>
+        </div>
+      </div>
+      <pre id="output-single"></pre>
+      <div class="sub-label">Multi-line form</div>
+      <div class="out-head">
+        <div></div>
+        <button id="copy-multi" type="button">Copy multi-line</button>
+      </div>
+      <pre id="output-multi"></pre>
+      <div class="privacy-note">This tool only builds a string. It never sends your request. Copy it and run it in your own terminal.</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div>curl Command Builder. Open source, MIT licensed. Built by <a href="https://elitesystem.ai" target="_blank" rel="noopener">elitesystem.ai</a>.</div>
+  <div>Builds strings only. No external dependencies, works offline.</div>
+</footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+const themeBtn = $("theme-toggle");
+function setTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  themeBtn.textContent = t === "dark" ? "Light" : "Dark";
+}
+themeBtn.addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme") || "light";
+  setTheme(cur === "dark" ? "light" : "dark");
+});
+
+// Single-quote for POSIX shells: wrap in single quotes, and escape any
+// embedded single quote as '\'' which closes the quote, adds an escaped
+// quote, and reopens. This is the safe, canonical way to quote arbitrary
+// text for sh/bash so no character inside is interpreted by the shell.
+function shellQuote(s) {
+  if (s === "") return "''";
+  if (/^[A-Za-z0-9_./:@%+,=-]+$/.test(s)) return s; // safe unquoted
+  return "'" + s.replace(/'/g, "'\\''") + "'";
+}
+
+function b64(s) {
+  // UTF-8 aware base64 for the Basic auth preview note (not required by curl -u, kept minimal)
+  const bytes = new TextEncoder().encode(s);
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin);
+}
+
+// Row factories
+function makeKV(container, kPlaceholder, vPlaceholder) {
+  const row = document.createElement("div");
+  row.className = "row-pair";
+  row.innerHTML =
+    '<input type="text" class="kv-k" placeholder="' + kPlaceholder + '" spellcheck="false" autocapitalize="off" autocorrect="off">' +
+    '<input type="text" class="kv-v" placeholder="' + vPlaceholder + '" spellcheck="false" autocapitalize="off" autocorrect="off">' +
+    '<button class="icon-btn remove" type="button" title="Remove">&times;</button>';
+  container.appendChild(row);
+  row.querySelector(".remove").addEventListener("click", () => { row.remove(); build(); });
+  row.querySelectorAll("input").forEach(inp => inp.addEventListener("input", build));
+  build();
+}
+
+$("add-param").addEventListener("click", () => makeKV($("params"), "key", "value"));
+$("add-header").addEventListener("click", () => makeKV($("headers"), "Header-Name", "value"));
+$("add-form").addEventListener("click", () => makeKV($("form-fields"), "field", "value"));
+
+function readKV(container) {
+  const out = [];
+  container.querySelectorAll(".row-pair").forEach(row => {
+    const k = row.querySelector(".kv-k").value;
+    const v = row.querySelector(".kv-v").value;
+    if (k !== "" || v !== "") out.push([k, v]);
+  });
+  return out;
+}
+
+// Show/hide auth and body sub-fields
+function updateAuthVisibility() {
+  const t = document.querySelector('input[name="auth"]:checked').value;
+  $("basic-fields").style.display = t === "basic" ? "block" : "none";
+  $("bearer-fields").style.display = t === "bearer" ? "block" : "none";
+}
+function updateBodyVisibility() {
+  const t = document.querySelector('input[name="body"]:checked').value;
+  $("body-raw-field").style.display = t === "raw" ? "block" : "none";
+  $("body-json-field").style.display = t === "json" ? "block" : "none";
+  $("body-form-field").style.display = t === "form" ? "block" : "none";
+}
+
+function buildUrl() {
+  let url = $("url").value.trim();
+  const params = readKV($("params"));
+  if (params.length === 0) return url;
+  const qs = params.map(([k, v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
+  if (!qs) return url;
+  return url + (url.includes("?") ? "&" : "?") + qs;
+}
+
+function buildArgs() {
+  const args = []; // array of already-quoted tokens
+  const method = $("method").value;
+
+  // Options first
+  if ($("opt-s").checked) args.push("-s");
+  if ($("opt-i").checked) args.push("-i");
+  if ($("opt-L").checked) args.push("-L");
+  if ($("opt-k").checked) args.push("-k");
+  if ($("opt-compressed").checked) args.push("--compressed");
+
+  // Method: emit -X only when the method is not a plain GET.
+  const bodyType = document.querySelector('input[name="body"]:checked').value;
+  if (method !== "GET") {
+    args.push("-X", method);
+  }
+
+  // Headers
+  const headers = readKV($("headers"));
+  for (const [k, v] of headers) {
+    args.push("-H", shellQuote(k + ": " + v));
+  }
+
+  // Auth
+  const authType = document.querySelector('input[name="auth"]:checked').value;
+  if (authType === "basic") {
+    const u = $("auth-user").value;
+    const p = $("auth-pass").value;
+    args.push("-u", shellQuote(u + ":" + p));
+  } else if (authType === "bearer") {
+    const tok = $("auth-token").value;
+    args.push("-H", shellQuote("Authorization: Bearer " + tok));
+  }
+
+  // Body
+  if (bodyType === "raw") {
+    args.push("--data-raw", shellQuote($("body-raw").value));
+  } else if (bodyType === "json") {
+    args.push("-H", shellQuote("Content-Type: application/json"));
+    args.push("--data-raw", shellQuote($("body-json").value));
+  } else if (bodyType === "form") {
+    const fields = readKV($("form-fields"));
+    for (const [k, v] of fields) {
+      args.push("--data-urlencode", shellQuote(k + "=" + v));
+    }
+  }
+
+  // URL last
+  args.push(shellQuote(buildUrl()));
+
+  return args;
+}
+
+function build() {
+  updateAuthVisibility();
+  updateBodyVisibility();
+  $("insecure-warn").classList.toggle("show", $("opt-k").checked);
+
+  const args = buildArgs();
+  const single = "curl " + args.join(" ");
+  $("output-single").textContent = single;
+
+  // Multi-line: put curl on first line, then group flag+value onto continuation lines.
+  const lines = ["curl"];
+  let i = 0;
+  const flagsWithValue = new Set(["-X", "-H", "-u", "--data-raw", "--data-urlencode"]);
+  while (i < args.length) {
+    const tok = args[i];
+    if (flagsWithValue.has(tok) && i + 1 < args.length) {
+      lines.push("  " + tok + " " + args[i + 1]);
+      i += 2;
+    } else {
+      lines.push("  " + tok);
+      i += 1;
+    }
+  }
+  $("output-multi").textContent = lines.join(" \\\n");
+}
+
+// Copy handlers
+function copyText(text, msgId) {
+  const done = () => {
+    const m = $(msgId);
+    m.style.display = "inline";
+    setTimeout(() => { m.style.display = "none"; }, 1500);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+function fallbackCopy(text, done) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+  done();
+}
+$("copy-btn").addEventListener("click", () => copyText($("output-single").textContent, "copied-msg"));
+$("copy-multi").addEventListener("click", () => copyText($("output-multi").textContent, "copied-msg"));
+
+// Wire up live updates
+["url", "method", "opt-i", "opt-L", "opt-k", "opt-compressed", "opt-s",
+ "auth-user", "auth-pass", "auth-token", "body-raw", "body-json"].forEach(id => {
+  const el = $(id);
+  el.addEventListener("input", build);
+  el.addEventListener("change", build);
+});
+document.querySelectorAll('input[name="auth"]').forEach(r => r.addEventListener("change", build));
+document.querySelectorAll('input[name="body"]').forEach(r => r.addEventListener("change", build));
+
+// Seed one empty row each and an initial URL
+$("url").value = "https://api.example.com/v1/users";
+makeKV($("params"), "key", "value");
+makeKV($("headers"), "Header-Name", "value");
+makeKV($("form-fields"), "field", "value");
+
+build();
+setTheme("light");
+</script>
+</body>
+</html>
